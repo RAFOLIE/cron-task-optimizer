@@ -1,0 +1,21 @@
+{
+  "description": "Cron Task Optimizer Configuration",
+  "status_file": "cron_status.json",
+  "history_enabled": true,
+  "history_days": 30,
+  "auto_cleanup": true,
+  "cleanup_days": 30,
+  "timezone": "Asia/Shanghai",
+  "tasks": {
+    "example-update-check": {
+      "enabled": true,
+      "schedule": "every 30m",
+      "description": "Check for software updates"
+    },
+    "example-issue-tracker": {
+      "enabled": true,
+      "schedule": "every 30m",
+      "description": "Track GitHub issues for updates"
+    }
+  }
+}
