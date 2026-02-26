@@ -1,6 +1,6 @@
 ---
 name: cron-task-optimizer
-description: Reduce API calls and token usage for cron tasks with local file-based status management and on-demand notifications.
+description: Save messaging API quota for bots and cron tasks (Feishu, Discord, WeChat, Slack, etc.) with local file-based status management.
 version: 1.0.0
 license: BSD-3-Clause
 author: OpenClaw Community
@@ -15,26 +15,31 @@ metadata:
 
 # Cron Task Optimizer
 
-**减少定时任务的 API 调用和 token 消耗，实现按需通知。**
+**节省通讯 API 配额（飞书、Discord、微信、Slack 等），实现按需通知。**
 
 ---
 
 ## 🎯 核心价值
 
-### 解决的问题
+### 解决的问题：API 配额耗尽
 
-- ❌ 定时任务频繁发送无意义消息
-- ❌ 大量消耗 API 配额（飞书、微信等）
-- ❌ 消耗大量 token（每个任务都要处理）
-- ❌ 用户被频繁打扰
+如果你有机器人或定时任务需要通过**通讯平台**发送消息（飞书、Discord、企业微信、Slack 等），可能会遇到：
 
-### 解决方案
+- ❌ **API 配额用完** - 通讯平台有严格的 API 调用限制（如飞书约 100 次/天）
+- ❌ **频繁轮询浪费配额** - 每 30 分钟检查一次 = 48 次/天，即使没有更新也要调用
+- ❌ **用户被频繁打扰** - 琐碎的更新也发消息
+- ❌ **无智能过滤** - 所有消息都发送，不管是否重要
 
-- ✅ 本地文件系统记录任务状态
-- ✅ 心跳轮询时检查状态文件
-- ✅ 只在有重要更新时才发送消息
-- ✅ 减少 70-95% 的 API 调用
-- ✅ Token 消耗接近 0
+### 解决方案：本地状态管理
+
+**Cron Task Optimizer** 使用**本地文件存储**来跟踪任务状态，只在有实际更新时才调用通讯 API：
+
+- ✅ **减少 70-95% 的 API 调用** - 只在必要时发送消息（如 48 → 2-5 次/天）
+- ✅ **零 token 成本** - 文件操作免费，不消耗 API token
+- ✅ **按需通知** - 用户只收到重要更新
+- ✅ **智能过滤** - 将多个任务更新合并成一条消息
+
+**关键洞察：** 这个工具节省的是**通讯 API 配额**，而不是 LLM token。它专为需要通过有 API 限制的平台发送消息的场景设计。
 
 ---
 
@@ -42,9 +47,13 @@ metadata:
 
 | 维度 | 优化前 | 优化后 | 改善 |
 |---|---|---|---|
-| **API 调用** | 96 次/天 | 0-5 次/天 | **-95%** |
-| **Token 消耗** | 5000-24000/天 | ~0/天 | **-100%** |
-| **用户体验** | 频繁打扰 | 按需通知 | **显著提升** |
+| **通讯 API 调用** | 96 次/天 | 0-5 次/天 | **-95%** |
+| **API 配额使用** | 96 次/天 | 0-5 次/天 | **-95%** |
+| **用户体验** | 每 30 分钟一次 | 按需通知 | **显著提升** |
+
+**示例：** 以飞书约 100 次/天的限制为例：
+- **优化前：** 2 个定时任务 × 48 次检查 = 96 次（使用 96% 配额）
+- **优化后：** 只在有更新时发送 = 2-5 次（使用 2-5% 配额）
 
 ---
 

@@ -1,6 +1,6 @@
 # ⚡ Cron Task Optimizer
 
-**Reduce API calls and token usage for cron tasks with local file-based status management.**
+**Save messaging API quota for bots and cron tasks (Feishu, Discord, WeChat, Slack, etc.)**
 
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 [![Python](https://img.shields.io/badge/Python-3.7%2B-brightgreen.svg)](https://www.python.org/)
@@ -8,25 +8,27 @@
 
 ---
 
-## 🎯 Why This Tool?
+## 🎯 What Problem Does This Solve?
 
-### The Problem
+### The Problem: API Quota Exhaustion
 
-If you use cron tasks that send messages (e.g., via Feishu, WeChat, Discord), you might face these issues:
+If you have bots or cron tasks that send messages via **messaging platforms** (Feishu, Discord, WeChat Work, Slack, etc.), you might face:
 
-- ❌ **High API Costs** - Frequent messages consume API quota
-- ❌ **Token Waste** - Each task invocation uses tokens
-- ❌ **User Disturbance** - Constant notifications annoy users
-- ❌ **No Filtering** - All messages sent, regardless of importance
+- ❌ **API Quota Depleted** - Messaging platforms have strict API call limits (e.g., Feishu ~100 calls/day)
+- ❌ **Frequent Polling Wastes Quota** - Checking every 30min = 48 calls/day, even when nothing changed
+- ❌ **User Disturbance** - Constant notifications for trivial updates
+- ❌ **No Intelligence** - All messages sent, regardless of importance
 
-### The Solution
+### The Solution: Local Status Management
 
-**Cron Task Optimizer** uses local file storage to manage task status:
+**Cron Task Optimizer** uses **local file storage** to track task status, and only calls messaging APIs when there are actual updates:
 
-- ✅ **70-95% Fewer API Calls** - Only send messages when necessary
-- ✅ **~0 Token Usage** - File operations don't consume tokens
+- ✅ **70-95% Fewer API Calls** - Only send messages when necessary (e.g., 48 → 2-5 calls/day)
+- ✅ **Zero Token Cost** - File operations are free, no API tokens consumed
 - ✅ **On-Demand Notifications** - Users only get important updates
 - ✅ **Smart Filtering** - Combine multiple task updates into one message
+
+**Key Insight:** This tool saves **messaging API quota**, not LLM tokens. It's designed for scenarios where you need to send messages through platforms with API limits.
 
 ---
 
@@ -34,9 +36,13 @@ If you use cron tasks that send messages (e.g., via Feishu, WeChat, Discord), yo
 
 | Metric | Before | After | Improvement |
 |---|---|---|---|
-| **API Calls** | 96/day | 0-5/day | **-95%** |
-| **Token Usage** | 5000-24000/day | ~0/day | **-100%** |
+| **Messaging API Calls** | 96/day | 0-5/day | **-95%** |
+| **API Quota Usage** | 96/day | 0-5/day | **-95%** |
 | **User Notifications** | Every 30min | As needed | **Better UX** |
+
+**Example:** With Feishu's ~100 calls/day limit:
+- **Before:** 2 cron tasks × 48 checks = 96 calls (96% quota used)
+- **After:** Only send when updates exist = 2-5 calls (2-5% quota used)
 
 ---
 
@@ -73,6 +79,43 @@ if report:
     send_message(report)  # Only sends when there are updates
     manager.clear_report()
 ```
+
+---
+
+## 🎭 Use Cases
+
+### When to Use This Tool
+
+✅ **You have cron tasks that send messages** via messaging platforms (Feishu, Discord, Slack, WeChat Work, Telegram, etc.)  
+✅ **Your messaging platform has API call limits** (quota, rate limits)  
+✅ **Your tasks frequently check for updates** but mostly find nothing new  
+✅ **You want to reduce unnecessary notifications**  
+
+### When NOT to Use This Tool
+
+❌ **You don't send messages through messaging platforms**  
+❌ **Your messaging platform has unlimited API calls**  
+❌ **You only care about reducing LLM token usage** (this tool focuses on messaging API quota)  
+
+### Real-World Examples
+
+**Example 1: Software Update Checker**
+- **Task:** Check for software updates every 30 minutes
+- **Before:** Send message every check (48 calls/day)
+- **After:** Only send when new version detected (2-3 calls/day)
+- **Saved:** 45 API calls/day (94%)
+
+**Example 2: GitHub Issue Tracker**
+- **Task:** Track GitHub issues every 30 minutes
+- **Before:** Send message every check (48 calls/day)
+- **After:** Only send when new comments detected (1-5 calls/day)
+- **Saved:** 43 API calls/day (90%)
+
+**Example 3: Multi-Task Bot**
+- **Tasks:** 5 different monitors checking every 30 minutes
+- **Before:** 5 × 48 = 240 calls/day (exceeds most quotas!)
+- **After:** Combine updates, send 1 message with all updates (5-10 calls/day)
+- **Saved:** 230 API calls/day (96%)
 
 ---
 
